@@ -21,14 +21,14 @@ y_star = x %*% theta0 + u						# latent "utility"
 y = ceiling(y_star/(max(abs(y_star))+0.1))				# observed outcome
 
 # Load the log-likelihood
-source("Probit_LL.R")
+source("assignment_1/Probit_LL.R")
 
 # optim without user-specified gradient
 result_b <- optim(par = theta0, Probit_LL, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
 result_b$par
 
 # Load the derivative of the log-likelihood
-source("Probit_LL_g.R")
+source("assignment_1/Probit_LL_g.R")
 
 # Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
 Probit_LL_g(y,x,theta0)
@@ -39,14 +39,14 @@ result_c <- optim(par = theta0, Probit_LL, y = y, x = x, gr = Probit_LL_g, metho
 result_c$par
 
 # Load the objective function for NLS
-source("Probit_NLS.R")
+source("assignment_1/Probit_NLS.R")
 
 # optim without user-specified gradient
 result_e <- optim(par = theta0, Probit_NLS, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
 result_e$par
 
 # Load the derivative of the NLS objective function
-source("Probit_NLS_g.R")
+source("assignment_1/Probit_NLS_g.R")
 
 # Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
 Probit_NLS_g(y,x,theta0)
@@ -57,16 +57,14 @@ result_f <- optim(par = theta0, Probit_NLS, y = y, x = x, gr = Probit_NLS_g, met
 result_f$par
 
 # Load the objective function for MM
-source("Probit_GMM.R")
-
-Probit_GMM(y,x,theta0) 
+source("assignment_1/Probit_GMM.R")
 
 # optim without user-specified gradient
 result_h <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
 result_h$par
 
 # Load the derivative of the GMM objective function
-source("Probit_GMM_g.R")
+source("assignment_1/Probit_GMM_g.R")
 # Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
 Probit_GMM_g(y,x,theta0)
 grad(function(u) Probit_GMM(y,x,u),theta0)
