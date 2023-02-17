@@ -74,3 +74,5 @@ result_i <- optim(par = theta0, Probit_GMM, y = y, x = x, gr = Probit_GMM_g, met
 result_i$par
 
 
+
+

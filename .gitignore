@@ -1,3 +1,8 @@
+## Ignore output files
+
+*.png
+*.pdf
+
 # History files
 .Rhistory
 .Rapp.history

@@ -2,7 +2,7 @@
 library(tictoc)
 library(tidyverse)
 
-tic()
+#tic()
 
 rm(list=ls()) 		# Clear workspace
 
@@ -17,8 +17,8 @@ k = length(theta0)
 # Load the log-likelihood, its derivative, and the hessian
 source("assignment_1/Probit_LL.R")
 source("assignment_1/Probit_NLS.R")
-#source("assignment_1/Probit_GMM.R")
-#source("assignment_1/Probit_J_1.R")
+source("assignment_1/Probit_GMM.R")
+source("assignment_1/Probit_J_1.R")
 #source("assignment_1/Probit_Sigma_NLS.R")
 #source("assignment_1/Probit_Var_GMM.R")
 
@@ -60,8 +60,8 @@ for (it in 1:num) {
 	  inside_N_ML[it] = 1
 	}
 	
-	#J_1_sum = J_1_sum + ...
-	#J_2_sum = J_2_sum + ...
+	J_1_sum = J_1_sum + (1/n)*solve(Probit_J_1(y,x,theta_hat_ML))
+	J_2_sum = J_2_sum + (1/n)*solve(result$hessian)
 	
 	# NLS
 	result <- optim(par = theta0, Probit_NLS, y = y, x = x, method = c("BFGS"),
@@ -77,15 +77,15 @@ for (it in 1:num) {
 	#Var_hat_NLS_sum = Var_hat_NLS_sum + ...
 	
 	# GMM
-	#result <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"),
-	#                control = list(reltol=1e-9), hessian=TRUE)
-	#
-	#theta_hat_GMM = result$par
-	#theta_hat_GMM_vec[it,1:k] = theta_hat_GMM
-	#
-	#if (sqrt(sum((theta_hat_GMM - theta0)^2)) < epsilon) {
-	#  inside_N_GMM[it] = 1
-	#}
+	result <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"),
+	                control = list(reltol=1e-9), hessian=TRUE)
+	
+	theta_hat_GMM = result$par
+	theta_hat_GMM_vec[it,1:k] = theta_hat_GMM
+	
+	if (sqrt(sum((theta_hat_GMM - theta0)^2)) < epsilon) {
+	  inside_N_GMM[it] = 1
+	}
 	
 	#Var_hat_GMM_sum = Var_hat_GMM_sum + ...
 }
@@ -111,24 +111,26 @@ theta1_data <- list("ML"=theta_hat_ML_vec[1:num,2],
                     "NLS"=theta_hat_NLS_vec[1:num,2], 
                     "GMM"=theta_hat_GMM_vec[1:num,2]) %>% 
   as.data.frame() %>% 
-  pivot_longer(cols=1:3,names_to = "type", values_to = "estim")
+  pivot_longer(cols=1:3, names_to="type", values_to="estim")
 
 theta1_data %>% 
   ggplot(aes(x=estim, fill=factor(type)))+
-  geom_histogram(bins=35)+
+  geom_histogram(bins=30)+
+  geom_vline(xintercept= 1)+
   facet_wrap("type")+
-  labs(title = "Distribution of Different Estimators")+
+  scale_x_continuous(limits = c(0, 2), breaks = seq(0,2,length.out=5))+
+  labs(title = "Distribution of Different Estimators (N=500)",
+       x= "Estimator value", y="Count")+
+  theme_light()+
   theme(legend.position = "none")
+ggsave("assignment_1/estim_dist_n500.png", width=16,height=9,units = "cm")
 
-# hist(theta_hat_GMM_vec[1:num,2])
 
-class(theta1_data)
-
-#J_1_sum/num
-#J_2_sum/num
+J_1_sum/num
+J_2_sum/num
 #Var_hat_NLS_sum/num
 #Var_hat_GMM_sum/num
 
-toc()
+#toc()
 
 
