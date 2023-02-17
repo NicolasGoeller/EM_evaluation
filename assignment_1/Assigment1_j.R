@@ -19,7 +19,7 @@ source("assignment_1/Probit_LL.R")
 source("assignment_1/Probit_NLS.R")
 source("assignment_1/Probit_GMM.R")
 source("assignment_1/Probit_J_1.R")
-#source("assignment_1/Probit_Sigma_NLS.R")
+source("assignment_1/Probit_Sigma_NLS.R")
 #source("assignment_1/Probit_Var_GMM.R")
 
 num = 1000			# Number of Monte Carlo iterations
@@ -74,7 +74,8 @@ for (it in 1:num) {
 	  inside_N_NLS[it] = 1
 	}
 	
-	#Var_hat_NLS_sum = Var_hat_NLS_sum + ...
+	sigma = Probit_Sigma_NLS()
+	Var_hat_NLS_sum = Var_hat_NLS_sum + solve(result$hessian) %*% sigma %*% solve(result$hessian)
 	
 	# GMM
 	result <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"),
