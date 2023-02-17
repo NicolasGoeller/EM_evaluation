@@ -1,4 +1,4 @@
-#Hi!
+
 library(numDeriv) 	# loads the functions grad and hessian which numerically evaluate the gradient and hessian
 
 rm(list=ls()) 		# Clear workspace
