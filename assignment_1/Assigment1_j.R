@@ -74,8 +74,8 @@ for (it in 1:num) {
 	  inside_N_NLS[it] = 1
 	}
 	
-	sigma = Probit_Sigma_NLS()
-	Var_hat_NLS_sum = Var_hat_NLS_sum + solve(result$hessian) %*% sigma %*% solve(result$hessian)
+	sigma_hat = Probit_Sigma_NLS(x,y,result$par)
+	Var_hat_NLS_sum = Var_hat_NLS_sum + (1/n)*(solve(result$hessian) %*% sigma_hat %*% solve(result$hessian))
 	
 	# GMM
 	result <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"),
@@ -129,7 +129,7 @@ ggsave("assignment_1/estim_dist_n500.png", width=16,height=9,units = "cm")
 
 J_1_sum/num
 J_2_sum/num
-#Var_hat_NLS_sum/num
+Var_hat_NLS_sum/num
 #Var_hat_GMM_sum/num
 
 #toc()
