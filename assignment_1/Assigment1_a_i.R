@@ -72,7 +72,7 @@ grad(function(u) Probit_GMM(y,x,u),theta0)
 # optim with user-specified gradient
 result_i <- optim(par = theta0, Probit_GMM, y = y, x = x, gr = Probit_GMM_g, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
 result_i$par
-
+###dkdkkkk
 
 
 

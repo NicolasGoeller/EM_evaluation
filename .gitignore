@@ -3,6 +3,8 @@
 *.png
 *.pdf
 
+*.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history
