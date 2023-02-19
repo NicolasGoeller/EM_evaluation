@@ -15,7 +15,9 @@ Probit_Sigma_NLS <- function(y,x,par,hessian) {
   s = t((y-Phi)*phi) %*% x
   s = -(2/n)*t(s)
   
-  f = (1/n)*(t(s) %*% s) #expectation of square of score function
+  #expectation of square of score function
+  f = (1/n)*(t(s) %*% s) #this gives 2x2 matrix
+  #f = (1/n)*(s %*% t(s)) #this gives scalar
   
   #f = (1/n)*(solve(H_hat) %*% sigma_hat %*% solve(H_hat))
 

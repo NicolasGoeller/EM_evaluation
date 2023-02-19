@@ -120,11 +120,11 @@ theta1_data %>%
   geom_vline(xintercept= 1)+
   facet_wrap("type")+
   scale_x_continuous(limits = c(0, 2), breaks = seq(0,2,length.out=5))+
-  labs(title = "Distribution of Different Estimators (N=500)",
+  labs(title = "Distribution of Different Estimators (N=300)",
        x= "Estimator value", y="Count")+
   theme_light()+
   theme(legend.position = "none")
-ggsave("assignment_1/estim_dist_n500.png", width=16,height=9,units = "cm")
+#ggsave("assignment_1/estim_dist_n300.png", width=16,height=9,units = "cm")
 
 
 J_1_sum/num
