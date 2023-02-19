@@ -7,7 +7,7 @@ Probit_NLS_g <- function (y,x,par) {
 	phi = dnorm(x %*% par) # generate pdf
 
 	f = t((y-Phi)*phi) %*% x
-	f = -(2/n)*t(f)
+	f = -(2/n)*f
 
 	return(f)
 }

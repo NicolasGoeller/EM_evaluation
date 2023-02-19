@@ -2,7 +2,7 @@
 library(tictoc)
 library(tidyverse)
 
-#tic()
+tic()
 
 rm(list=ls()) 		# Clear workspace
 
@@ -20,7 +20,7 @@ source("assignment_1/Probit_NLS.R")
 source("assignment_1/Probit_GMM.R")
 source("assignment_1/Probit_J_1.R")
 source("assignment_1/Probit_Sigma_NLS.R")
-#source("assignment_1/Probit_Var_GMM.R")
+source("assignment_1/Probit_Var_GMM.R")
 
 num = 1000			# Number of Monte Carlo iterations
 
@@ -60,7 +60,7 @@ for (it in 1:num) {
 	  inside_N_ML[it] = 1
 	}
 	
-	J_1_sum = J_1_sum + (1/n)*solve(Probit_J_1(y,x,theta_hat_ML))
+	J_1_sum = J_1_sum + (1/n)*solve(Probit_J_1(y=y,x=x,par=result$par))
 	J_2_sum = J_2_sum + (1/n)*solve(result$hessian)
 	
 	# NLS
@@ -74,8 +74,9 @@ for (it in 1:num) {
 	  inside_N_NLS[it] = 1
 	}
 	
-	sigma_hat = Probit_Sigma_NLS(x,y,result$par)
-	Var_hat_NLS_sum = Var_hat_NLS_sum + (1/n)*(solve(result$hessian) %*% sigma_hat %*% solve(result$hessian))
+	sigma_hat = Probit_Sigma_NLS(y=y,x=x,par=result$par)
+	H_hat = solve((1/n)*result$hessian)
+	Var_hat_NLS_sum = Var_hat_NLS_sum + (1/n)*(H_hat %*% sigma_hat %*% H_hat)
 	
 	# GMM
 	result <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"),
@@ -88,7 +89,8 @@ for (it in 1:num) {
 	  inside_N_GMM[it] = 1
 	}
 	
-	#Var_hat_GMM_sum = Var_hat_GMM_sum + ...
+	#Var_hat_GMM_sum = Var_hat_GMM_sum + (1/n)*Probit_Var_GMM(y=y,x=x,par=result$par)
+	Var_hat_GMM_sum = Var_hat_GMM_sum + (1/n)*Probit_Var_GMM(y=y,x=x,par=result$par)
 }
 
 # Averages - not asked for
@@ -130,8 +132,8 @@ theta1_data %>%
 J_1_sum/num
 J_2_sum/num
 Var_hat_NLS_sum/num
-#Var_hat_GMM_sum/num
+Var_hat_GMM_sum/num
 
-#toc()
+toc()
 
 
