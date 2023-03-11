@@ -1,5 +1,8 @@
 
 library(numDeriv) 	# loads the functions grad and hessian which numerically evaluate the gradient and hessian
+library(tictoc)
+
+tic()
 
 rm(list=ls()) 		# Clear workspace
 
@@ -11,68 +14,129 @@ theta0 = c(1,1) 	# True parameter value
 
 k = length(theta0) 
 
-# Data generating process
-x = cbind(matrix(1,n,1),matrix(rnorm((k-1)*n,0,1),ncol=k-1)) 	# regressors
+theta_start = rep(0,k)
 
-u = rnorm(n,0,1)							 	# error term
+# Set working directory
+# setwd("...")
 
-y_star = x %*% theta0 + u						# latent "utility"
+# Load the log-likelihood, its derivative, and the hessian
+source("Probit_LL_h.R")
+source("Probit_LL.R")
+source("J_1.R")
+source("J_3.R")
 
-y = ceiling(y_star/(max(abs(y_star))+0.1))				# observed outcome
+num = 100			# Number of Monte Carlo iterations
 
-# Load the log-likelihood
-source("assignment_1/Probit_LL.R")
+theta_hat_vec = matrix(0,num,k)
 
-# optim without user-specified gradient
-result_b <- optim(par = theta0, Probit_LL, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_b$par
+J_1_inv = matrix(0,k,k)
+J_2_inv = matrix(0,k,k)
+J_3_inv = matrix(0,k,k)
 
-# Load the derivative of the log-likelihood
-source("assignment_1/Probit_LL_g.R")
+B = 399
 
-# Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
-Probit_LL_g(y,x,theta0)
-grad(function(u) Probit_LL(y,x,u),theta0)
+J_inv_boot = matrix(0,k,k)
 
-# optim with user-specified gradient
-result_c <- optim(par = theta0, Probit_LL, y = y, x = x, gr = Probit_LL_g, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_c$par
+for (it in 1:num) {
+  # Data generating process
+  x = cbind(matrix(1,n,1),matrix(rnorm((k-1)*n,0,1),ncol=k-1)) 	# regressors
+  
+  u = rnorm(n,0,1)							 	# error term
+  
+  y_star = x %*% theta0 + u						# latent "utility"
+  
+  y = ceiling(y_star/(max(abs(y_star))+0.1))				# observed outcome
+  
+  dat = data.frame(x,y)
+  probit <- glm(y~x-1, data=dat, family = binomial(link = "probit"))
+  theta_hat = probit$coefficients
+  #probit <- optim(par = theta0, Probit_LL, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
+  #theta_hat = probit$par
+  
+  #switch out glm for our optim function 
+  
+  theta_hat_vec[it,1:k] = theta_hat
+  
+  J_1_inv = J_1_inv + solve(J_1(y,x,theta_hat))
+  
+  J_2_inv = J_2_inv + solve(Probit_LL_h(y,x,theta_hat))
+  
+  J_3_inv = J_3_inv + solve(J_3(y,x,theta_hat))
+  #we dont care about J_3
+  theta_hat_boot = matrix(0,B,k)
+  
+  for (b in 1:B) {
+    index_b <- sample(length(y),length(y),replace=TRUE)
+    y_b <- y[index_b]
+    x_b <- x[index_b,]
+    dat_b = data.frame(x_b,y_b)
+    probit <- glm(y_b~x_b-1, data=dat_b, family = binomial(link = "probit"))
+    #probit <- optim(par = theta0, Probit_LL, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
+    theta_hat_boot[b,1:k] = probit$coefficients
+  }
+  
+  J_inv_boot = J_inv_boot + var(theta_hat_boot)
+}
 
-# Load the objective function for NLS
-source("assignment_1/Probit_NLS.R")
+# Average of theta_hat over Monte Carlo iterations
+colMeans(theta_hat_vec)
 
-# optim without user-specified gradient
-result_e <- optim(par = theta0, Probit_NLS, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_e$par
+# Variance of theta_hat over Monte Carlo iterations
+var(theta_hat_vec)
 
-# Load the derivative of the NLS objective function
-source("assignment_1/Probit_NLS_g.R")
+# Average of variance estimate based on J_1
+J_1_inv/num
 
-# Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
-Probit_NLS_g(y,x,theta0)
-grad(function(u) Probit_NLS(y,x,u),theta0)
+# Average of variance estimate based on J_2
+J_2_inv/num
 
-# optim with user-specified gradient
-result_f <- optim(par = theta0, Probit_NLS, y = y, x = x, gr = Probit_NLS_g, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_f$par
+# Average of variance estimate based on J_3
+J_3_inv/num
 
-# Load the objective function for MM
-source("assignment_1/Probit_GMM.R")
+# Average of variance estimate based on J_3
+J_inv_boot/num 
 
-# optim without user-specified gradient
-result_h <- optim(par = theta0, Probit_GMM, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_h$par
-
-# Load the derivative of the GMM objective function
-source("assignment_1/Probit_GMM_g.R")
-# Check if the gradient function was correctly programmed by comparing it to a numerical approximation of it
-Probit_GMM_g(y,x,theta0)
-grad(function(u) Probit_GMM(y,x,u),theta0)
-
-# optim with user-specified gradient
-result_i <- optim(par = theta0, Probit_GMM, y = y, x = x, gr = Probit_GMM_g, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-result_i$par
+toc()
 
 
+############ RESULTS!!!!############
 
-
+#> # Average of theta_hat over Monte Carlo iterations
+#  > colMeans(theta_hat_vec)
+#[1] 1.0037004 0.9977425
+#> 
+#  > # Variance of theta_hat over Monte Carlo iterations
+#  > var(theta_hat_vec)
+#[,1]        [,2]
+#[1,] 0.013638099 0.006865704
+#[2,] 0.006865704 0.014315621
+#> 
+#  > # Average of variance estimate based on J_1
+#  > J_1_inv/num
+#[,1]        [,2]
+#[1,] 0.012352861 0.007735274
+#[2,] 0.007735274 0.017101566
+#> 
+#  > # Average of variance estimate based on J_2
+#  > J_2_inv/num
+#[,1]        [,2]
+#[1,] 0.011931341 0.007104595
+#[2,] 0.007104595 0.015858498
+#> 
+#  > # Average of variance estimate based on J_3
+#  > J_3_inv/num
+#[,1]        [,2]
+#[1,] 0.011920912 0.007070086
+#[2,] 0.007070086 0.015763052
+#> 
+#  > # Average of variance estimate based on J_3
+#  > J_inv_boot/num 
+#[,1]        [,2]
+#[1,] 0.012534687 0.007547447
+#[2,] 0.007547447 0.016350754
+#> 
+#  > toc()
+#186.89 sec elapsed
+#
+#
+#
