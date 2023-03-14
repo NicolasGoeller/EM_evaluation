@@ -55,18 +55,20 @@ for (it in 1:num) {
 	y = ceiling(y_star/(max(abs(y_star))+0.1))				# observed outcome
 
 	### Constrained model optimisation
-	result <- optim(par = theta_null, Probit_LL_r, y = y, x = x, theta0_r= 1, 
-	                method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
-	theta_hat_r = c(1, result$par)
+	result_r <- optim(par = theta_null, Probit_LL_r, y = y, x = x, theta0_r= 1, 
+	                  method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
+	theta_hat_r = c(1, result_r$par)
 	
 	theta_hat_r_vec[it,1:k] = theta_hat_r
-	result$hessian
+	result_r$hessian
 	## Wald
 	C_theta = matrix(c(0,1),nrow=1,ncol=2)
-	V_n = (-1)*solve(Probit_LL_h(y,x,theta_hat_r))#
+	c_theta = (theta_hat_r[1]-theta_hat_r[2])
+	V_n = solve(Probit_LL_h(y,x,theta_hat_r))#(1/n)*
+	Wald = c_theta*solve(C_theta%*%V_n%*%t(C_theta))*c_theta
 	#V_n = solve(C_theta%*%((1/n)*Probit_LL_h(y,x,theta_hat_r))%*%t(C_theta))
 	#V_n = C_theta%*%(1/n)*(solve(Probit_LL_h(y,x,theta_hat_r)))%*%t(C_theta)
-	Wald = sum(theta_hat_r)*solve(C_theta%*%V_n%*%t(C_theta))*sum(theta_hat_r)
+
 	#Wald = sum(theta_hat_r)*V_n*sum(theta_hat_r)
 	
 	Wald_vec[it] = Wald
@@ -82,7 +84,7 @@ for (it in 1:num) {
  	## Score
  	Score = Probit_LL_g(y,x,theta_hat_r)
 	
- 	Score_stat = t(Score)%*%solve(Probit_J_1(y,x,theta_hat_r))%*%Score
+ 	Score_stat = t(Score)%*%solve((1/n)*Probit_J_1(y,x,theta_hat_r))%*%Score
  	Score_vec[it] = Score_stat
  	
  	if (is.nan(Score_stat) == 0) {
@@ -100,8 +102,10 @@ for (it in 1:num) {
  	
  	theta_hat_vec[it,1:k] = theta_hat
 
-	# LR
-	LR = 2*n*(Probit_LL(y,x,theta_hat)-Probit_LL(y,x,theta_hat_r))
+	# LR Probit_LL_r(y,x,theta_hat_r[2],1)
+ 	## Why is the bracket negative LL_r is larger than LL (even the same is LL(theta_r))
+	#LR = 2*n*(Probit_LL(y,x,theta_hat)-Probit_LL_r(y,x,theta_hat_r[1],1))
+ 	LR = 2*n*(Probit_LL(y,x,theta_hat_r)-Probit_LL(y,x,theta_hat))
 	LR_vec[it] = LR
 	
 	if (is.nan(LR) == 0) {
