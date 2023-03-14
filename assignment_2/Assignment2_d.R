@@ -1,6 +1,8 @@
 
 library(numDeriv) 	# loads the functions grad and hessian which numerically evaluate the gradient and hessian
 library(tictoc)
+library(reshape2)
+library(gridExtra)
 
 #tic()
 
@@ -31,8 +33,8 @@ num = 1000			# Number of Monte Carlo iterations
 theta_hat_vec = matrix(0,num,k)
 theta_hat_r_vec = matrix(0,num,k)
 
-J_1_inv = matrix(0,k,k)
-J_2_inv = matrix(0,k,k)
+#J_1_inv = matrix(0,k,k)
+#J_2_inv = matrix(0,k,k)
 
 Wald_vec = rep(0,num)
 Score_vec = rep(0,num)
@@ -121,31 +123,42 @@ mean(reject_Wald)
 mean(reject_Score)
 mean(reject_LR)
 
-#test_data <- list("wald"=Wald_vec, 
-#                  "score"=Score_vec, 
-#                  "lr"=LR_vec) %>% 
+#test_data <- list("Wald"=Wald_vec, 
+#                  "Score"=Score_vec, 
+#                  "LR"=LR_vec) %>% 
 #  as.data.frame() %>% 
 #  pivot_longer(cols=1:3, names_to="test", values_to="test_stat")
 #
-#theta1_data %>% 
+#
+#
+#test_data %>% 
+#  filter(test == "Score") %>% 
 #  ggplot(aes(x=test_stat, fill=factor(test)))+
-#  geom_histogram(bins=30)+
-#  stat_function(fun=dchisq(x, df = k))
+#  geom_histogram(aes(y = stat(count)/300),bins=30)+
+#  #stat_function(fun=dchisq(x, df = k))#+
 #  facet_wrap("test")+
 #  labs(title = "Test statistic distributions (N=300)",
 #       x= "Test statistic value", y="Count")+
 #  theme_light()+
 #  theme(legend.position = "none")
-##ggsave("assignment_2/MLE_test_trinity_d.png", width=16,height=9,units = "cm")
+###ggsave("assignment_2/MLE_test_trinity_d.png", width=16,height=9,units = "cm")
 
 
-#hist(Wald_vec,30, freq=FALSE) 
-#curve(dchisq(x, df = k), from = 0, to = 15, add=TRUE)
-#
-#mean(reject_Wald)
-#mean(reject_Score)
-#mean(reject_LR)
-#
-#toc()
+png("assignment_2/wald_hist.png")
+hist(Wald_vec,30, freq=FALSE, 
+     xlab = "Wald test statistic", ylab = "Density", main="Distribution of Wald test statistic") 
+curve(dchisq(x, df = q), from = 0, to = 15, add=TRUE)
+dev.off()
 
+png("assignment_2/score_hist.png")
+hist(Score_vec,30, freq=FALSE,
+     xlab = "Score test statistic", ylab = "Density", main="Distribution of Score test statistic") 
+curve(dchisq(x, df = q), from = 0, to = 15, add=TRUE)
+dev.off()
+
+png("assignment_2/lr_hist.png")
+hist(LR_vec,30, freq=FALSE,
+     xlab = "LR test statistic", ylab = "Density", main="Distribution of LR test statistic") 
+curve(dchisq(x, df = q), from = 0, to = 15, add=TRUE)
+dev.off()
 

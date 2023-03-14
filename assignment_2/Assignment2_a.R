@@ -15,7 +15,7 @@ bootstrap_df <- data.frame(matrix(ncol = 2, nrow = 0))
 colnames(bootstrap_df) <- c("B","value")
 
 for (num in b_val){
-  set.seed(1)
+  set.seed(1) ## Values are slightly different for set.seed() at position above
   b_est <- rep(0,num)
   for (it in 1:num) {
     # Data generating process
