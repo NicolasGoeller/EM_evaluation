@@ -1,6 +1,4 @@
 library(tidyverse)
-library(margins)
-library(gmm)
 
 rm(list=ls()) 		# Clear workspace
 
@@ -117,6 +115,10 @@ result <- optim(par = theta0, Probit_GMM, y = y_true, x = x_true, method = c("BF
 theta_hat_GMM = result$par
 true_GMM_eff = avg_probit_effect(theta_hat_GMM, 1, x_true)
 
+### Average of avg marg effects
+theta1_data %>% 
+  group_by(type) %>% 
+  summarise(avg_eff = mean(estim))
 
 # Plot the histogram of the distribution of the estimator over Monte Carlo iterations
 

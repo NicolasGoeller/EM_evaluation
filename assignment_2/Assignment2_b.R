@@ -16,14 +16,10 @@ k = length(theta0)
 
 theta_start = rep(0,k)
 
-# Set working directory
-# setwd("...")
-
 # Load the log-likelihood, its derivative, and the hessian
-source("Probit_LL_h.R")
-source("Probit_LL.R")
-source("J_1.R")
-source("J_3.R")
+source("assignment_2/Probit_LL_h.R")
+source("assignment_2/Probit_LL.R")
+source("assignment_2/Probit_J_1.R")
 
 num = 100			# Number of Monte Carlo iterations
 
@@ -31,7 +27,6 @@ theta_hat_vec = matrix(0,num,k)
 
 J_1_inv = matrix(0,k,k)
 J_2_inv = matrix(0,k,k)
-J_3_inv = matrix(0,k,k)
 
 B = 399
 
@@ -57,12 +52,10 @@ for (it in 1:num) {
   
   theta_hat_vec[it,1:k] = theta_hat
   
-  J_1_inv = J_1_inv + solve(J_1(y,x,theta_hat))
+  J_1_inv = J_1_inv + solve(Probit_J_1(y,x,theta_hat))
   
   J_2_inv = J_2_inv + solve(Probit_LL_h(y,x,theta_hat))
   
-  J_3_inv = J_3_inv + solve(J_3(y,x,theta_hat))
-  #we dont care about J_3
   theta_hat_boot = matrix(0,B,k)
   
   for (b in 1:B) {
@@ -89,9 +82,6 @@ J_1_inv/num
 
 # Average of variance estimate based on J_2
 J_2_inv/num
-
-# Average of variance estimate based on J_3
-J_3_inv/num
 
 # Average of variance estimate based on J_3
 J_inv_boot/num 
