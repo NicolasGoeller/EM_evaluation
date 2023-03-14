@@ -1,9 +1,9 @@
-Probit_LL_r <- function(y,x,par,theta0_r) {
+Probit_LL_r <- function(y,x,par,theta1_r) {
   
   n = length(y) 
   #k = length(par)
 
-  par = matrix(c(theta0_r, par),nrow=2, ncol=1)
+  par = matrix(c(par, theta1_r),nrow=2, ncol=1)
   Phi = pnorm(x %*% par)
   
   # Computing the log-likelihood

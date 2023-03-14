@@ -1,0 +1,37 @@
+QLR_GMM <- function(y,x,par) {
+  
+  n = length(y)
+  k = length(par)
+  
+  Phi = pnorm(x %*% par)
+  phi = dnorm(x %*% par)
+  
+  #m = matrix(rep((y-Phi),k),nrow=n)*x
+  
+  g= (1/n)*(t((y-Phi))%*%x)
+  O=(1/n)*g%*%t(g)
+  QLR_hat = n*t(g)%*%solve(O)%*%g
+  
+  #g = matrix(rep((y-Phi),k),nrow=n)*x
+  #O = t(g)%*%g
+  #QLR_hat = n*(g)%%solve(O)%%t(g)
+  
+  return(QLR_hat)
+}
+
+
+#Probit_GMM_r <- function(y,x,par,theta0_r) {
+#  
+#  n = length(y) 
+#  k = length(par)
+#  
+#  par = matrix(c(theta0_r, par),nrow=2, ncol=1)
+#  Phi = pnorm(x %*% par)
+#  
+#  g = t(y - Phi)%*%x
+#  W_hat = (1/n)*t(g)%*%g
+#  
+#  f = (1/n)*(g) %*% W_hat %*% t((1/n)*(g))
+#  
+#  return(f)
+#}#

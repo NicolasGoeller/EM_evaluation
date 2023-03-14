@@ -115,10 +115,7 @@ result <- optim(par = theta0, Probit_GMM, y = y_true, x = x_true, method = c("BF
 theta_hat_GMM = result$par
 true_GMM_eff = avg_probit_effect(theta_hat_GMM, 1, x_true)
 
-### Average of avg marg effects
-theta1_data %>% 
-  group_by(type) %>% 
-  summarise(avg_eff = mean(estim))
+
 
 # Plot the histogram of the distribution of the estimator over Monte Carlo iterations
 
@@ -127,6 +124,11 @@ theta1_data <- list("ML"=avg_margeff_ML,
                     "GMM"=avg_margeff_GMM) %>% 
   as.data.frame() %>% 
   pivot_longer(cols=1:3, names_to="type", values_to="estim")
+
+### Average of avg marg effects
+theta1_data %>% 
+  group_by(type) %>% 
+  summarise(avg_eff = mean(estim))
 
 theta1_data %>% 
   ggplot(aes(x=estim, fill=factor(type)))+
