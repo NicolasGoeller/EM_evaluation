@@ -21,9 +21,9 @@ colnames(final_data) <- columns
 for (param in dgp_param){
   
 
-  
+  #Random coefficient model: beta0, beta1, sigma
   theta0 = list(mean= c(1,param[1]),
-                var= c(0,param[2])) #Random coefficient model: beta0, beta1, sigma
+                var= c(0,param[2])) 
   
   test_data <- mcprobit_beta1_test(n, num, param)
   

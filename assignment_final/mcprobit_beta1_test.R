@@ -20,14 +20,23 @@ mcprobit_beta1_test <- function(n,num,param){
     y_star = x %*% theta0[[1]] + u						# latent "utility"
     y = ceiling(y_star/(max(abs(y_star))+0.1))
     
+    ## Estimate unrestricted model
+    result <- optim(par = theta0, rnd_Probit_LL, y = y, x = x, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
+    theta_hat_ML = result$par
+    
     ## Wald Test
     wald = (theta_hat_ML[2] - theta1_null)^2/J_2_inv_hat[2,2]
     
     test_data[i,"wald"]= wald
     
+    # estimate restricted model
+    result_cons <- optim(par = theta0[1], rnd_Probit_LL_cons, y = y, x = x, theta1_null = theta1_null, method = c("BFGS"), control = list(reltol=1e-9), hessian=TRUE)
+    theta_hat_ML_cons = c(result_cons$par,theta1_null)
+    
+    
     ## Score Test
-    score = Probit_LL_g(y,x,theta_hat_ML_cons)
-    score = n*score%*%solve(Probit_J_1(y,x,theta_hat_ML_cons)/n)%*%t(score)
+    score = rnd_Probit_LL_g(y,x,theta_hat_ML_cons)
+    score = n*score%*%solve(rand_Probit_J_1(y,x,theta_hat_ML_cons)/n)%*%t(score)
     
     test_data[i,"score"]= score
     
