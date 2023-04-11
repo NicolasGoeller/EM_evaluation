@@ -1,14 +1,17 @@
-Probit_J_1 <- function(y,x,par1,par2) {
+rnd_Probit_J_1 <- function(y,x,par) {
   
   n = length(y)
-  k = length(par)
+  m = length(par)
   
-  Phi = pnorm((x %*% par1)/sqrt(1 + (x**2)%*%(par2**2)))
-  phi = dnorm((x %*% par1)/sqrt(1 + (x**2)%*%(par2**2)))
+  Phi = pnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2)))
+  phi = dnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2)))
   
-  g = matrix(rep(y*phi/Phi - (1-y)*phi/(1-Phi),k),nrow=n)*x
+  print(dim(phi))
+  print(dim(Phi))
   
-  f = (1/n)*t(g)%*%g#
+  g = matrix(rep(y*phi/Phi - (1-y)*phi/(1-Phi),m),nrow=n)*x
+  
+  f = (1/n)*t(g)%*%g
 
 	return(f)
 }

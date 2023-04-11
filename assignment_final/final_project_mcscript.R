@@ -1,11 +1,22 @@
 library(tidyverse)
+library(tictoc)
+
+tic()
 
 rm(list=ls()) 		# Clear workspace
 
+## Load function for MC Probit
+source("assignment_final/mcprobit_beta1_test.R")
+
 ## Set DGP parameters
-beta1 = seq(0,2,0.1)			
+beta0 = c(1)
+beta1 = seq(-2,2,0.1)	### maybe constrain more at 2,-2 doesnt run, does for 1.5		
 sigma = c(0,0.05,0.15)
-dgp_param <- merge(beta1,sigma) %>% t() %>% as.data.frame() %>% as.list()
+dgp_param <- merge(beta1,sigma) %>% 
+  cbind("z"=rep(1,length(beta1)*length(sigma)),.) %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  as.list()
 
 ## Set MC parameters
 epsilon = 0.1     # Set error margin
@@ -17,21 +28,20 @@ columns <- c("beta1","sigma","wald","score","lr")
 final_data <- data.frame(matrix(nrow = 0, ncol = length(columns)))
 colnames(final_data) <- columns
 
+## Set Hypothesis values
+theta_null <- c(1,0,0.05) #beta0,beta1,sigma
+
 
 for (param in dgp_param){
+  print(param)
   
-
-  #Random coefficient model: beta0, beta1, sigma
-  theta0 = list(mean= c(1,param[1]),
-                var= c(0,param[2])) 
-  
-  test_data <- mcprobit_beta1_test(n, num, param)
+  test_data <- mcprobit_beta1_test(n, num, param, theta_null)
   
   final_data <- rbind(final_data,test_data)
   
 }
 
-
+toc()
 
 
 
