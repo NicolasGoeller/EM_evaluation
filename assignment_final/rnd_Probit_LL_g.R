@@ -1,14 +1,29 @@
 rnd_Probit_LL_g <- function (y,x,par) {
   
   n = length(y) 
-  #k = length(par)
+  k = length(par)
   
-  Phi = pnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2))) # generate cdf
-  phi = dnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2))) # generate pdf
+  #sigmabeta = sqrt(abs(1 + (t(x)%*%x)*par[2]))[1]
+  #sigmabeta2 = (abs(1 + (t(x)%*%x)*par[2])^1.5)[1]
   
+  sigmabeta = sqrt(1 + (x^2)*par[2]^2)
+  sigmabeta2 = sqrt(1 + (x^2)*par[2]^2)^1.5
   
-  f = t(y*phi/Phi - (1-y)*phi/(1-Phi)) %*% x
-  f = -(1/n)*t(f)
+  Phi = pnorm((x * par[1])/sigmabeta) # generate cdf
+  phi = dnorm((x * par[1])/sigmabeta) # generate pdf
   
-	return(f)
+  d_beta = rep(NA,n)
+  d_sigma = rep(NA,n)
+  
+  for (i in 1:n){
+    d_beta[i] = (y[i]*x[i]*phi[i])/(sigmabeta[i]*Phi[i]) - ((1-y[i])*x[i]*phi[i])/((1-Phi[i])*sigmabeta[i])
+    d_sigma[i] = ((1-y[i])*par[1]*x[i]^3*phi[i])/(2*(1-Phi[i])*sigmabeta2[i]) - (y[i]*par[1]*x[i]^3*phi[i])/(2*Phi[i]*sigmabeta2[i])
+    ### trying out gradient from ChatGPT
+    #d_sigma[i] = (x[i]^2*par[1]^2*(y[i] - Phi[i]))/sigmabeta2
+  }
+
+  g = matrix(c(sum(d_beta),sum(d_sigma)),nrow=k)
+  g = -(1/n)*g
+  
+	return(g)
 }

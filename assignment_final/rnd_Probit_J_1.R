@@ -1,17 +1,29 @@
 rnd_Probit_J_1 <- function(y,x,par) {
-  
+
   n = length(y)
-  m = length(par)
+  k = length(par)
   
-  Phi = pnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2)))
-  phi = dnorm((x %*% par[1:2])/sqrt(1 + (x[,2]**2)*(par[3]**2)))
+  #sigmabeta = sqrt(abs(1 + (t(x)%*%x)*par[2]))[1]
+  #sigmabeta2 = (abs(1 + (t(x)%*%x)*par[2])^1.5)[1]
   
-  print(dim(phi))
-  print(dim(Phi))
+  sigmabeta = sqrt(1 + (x^2)*par[2]^2)
+  sigmabeta2 = sqrt(1 + (x^2)*par[2]^2)^1.5
+
+  Phi = pnorm((x * par[1])/sigmabeta[1]) # generate cdf
+  phi = dnorm((x * par[1])/sigmabeta[1]) # generate pdf
   
-  g = matrix(rep(y*phi/Phi - (1-y)*phi/(1-Phi),m),nrow=n)*x
+  d_beta = rep(NA,n)
+  d_sigma = rep(NA,n)
+
+  for (i in 1:n){
+    d_beta[i] = (y[i]*x[i]*phi[i])/(sigmabeta[1]*Phi[i]) - ((1-y[i])*x[i]*phi[i])/((1-Phi[i])*sigmabeta[1])
+    d_sigma[i] = ((1-y[i])*par[1]*x[i]^3*phi[i])/(2*(1-Phi[i])*sigmabeta2[1]) - (y[i]*par[1]*x[i]^3*phi[i])/(2*Phi[i]*sigmabeta2[1])
+    #print(c(d_beta[i], d_sigma[i]))
+  }
+
+  score = matrix(rbind(d_beta,d_sigma), nrow=k)
   
-  f = (1/n)*t(g)%*%g
+  f = score%*%t(score)#(1/n)*
 
 	return(f)
 }

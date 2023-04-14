@@ -1,11 +1,11 @@
-rnd_Probit_LL <- function(y,x,par) {
+rnd_Probit_LL_cons <- function(y,x,beta,par) {
   
-  n = length(y) 
+  n = length(y)
   
-  #sigmabeta = sqrt(abs(1 + (t(x)%*%x)*par[2]))[1]
-  #Phi = pnorm((x * par[1])/sigmabeta)
+  #sigmabeta = sqrt(abs(1 + (t(x)%*%x)*par))[1]
+  #Phi = pnorm((x * beta)/sigmabeta)
   
-  Phi = pnorm((x * par[1])/sqrt(1 + (x^2)*par[2]^2))
+  Phi = pnorm((x * beta)/sqrt(1 + (x^2)*par^2))
   
   ## Normalise edges of logged Phi vectors
   log1 = log(Phi)
@@ -20,10 +20,8 @@ rnd_Probit_LL <- function(y,x,par) {
   f = sum(y*log1) + sum((1-y)*log2)
 
   f = -(1/n)*f
-  #print(paste(par[1], par[2], f))
+  #print(paste(beta, par, f))
   
-	return(f)
+  return(f)
 }
-
-
 
