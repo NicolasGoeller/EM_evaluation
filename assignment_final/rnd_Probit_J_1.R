@@ -3,9 +3,6 @@ rnd_Probit_J_1 <- function(y,x,par) {
   n = length(y)
   k = length(par)
   
-  #sigmabeta = sqrt(abs(1 + (t(x)%*%x)*par[2]))[1]
-  #sigmabeta2 = (abs(1 + (t(x)%*%x)*par[2])^1.5)[1]
-  
   sigmabeta = sqrt(1 + (x^2)*par[2]^2)
   sigmabeta2 = sqrt(1 + (x^2)*par[2]^2)^1.5
 
@@ -23,7 +20,7 @@ rnd_Probit_J_1 <- function(y,x,par) {
 
   score = matrix(rbind(d_beta,d_sigma), nrow=k)
   
-  f = score%*%t(score)#(1/n)*
+  f = score%*%t(score)
 
 	return(f)
 }
