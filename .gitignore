@@ -4,6 +4,7 @@
 *.pdf
 *.zip
 *.bib
+*.csv
 
 *.DS_Store
 
